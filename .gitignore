@@ -1,0 +1,20 @@
+# Large model files
+models/
+
+# Processed data (reproducible from notebooks)
+data/processed/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# Secrets / env
+.env

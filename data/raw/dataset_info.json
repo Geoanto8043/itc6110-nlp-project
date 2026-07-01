@@ -1,0 +1,22 @@
+{
+  "source": "SetFit/bbc-news (HuggingFace)",
+  "total_articles": 2225,
+  "train_articles": 1225,
+  "test_articles": 1000,
+  "categories": {
+    "sport": 511,
+    "business": 510,
+    "politics": 417,
+    "tech": 401,
+    "entertainment": 386
+  },
+  "avg_article_length_chars": 2262,
+  "avg_article_length_words": 390,
+  "label_mapping": {
+    "2": "sport",
+    "1": "business",
+    "3": "entertainment",
+    "0": "tech",
+    "4": "politics"
+  }
+}
