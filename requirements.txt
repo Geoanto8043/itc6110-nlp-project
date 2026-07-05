@@ -1,0 +1,29 @@
+# Install in Colab with: pip install -r requirements.txt
+# (torch is pre-installed on Colab — listed here for local reference only)
+
+# Data / NLP
+datasets>=2.19
+gensim>=4.4
+pyldavis>=3.4
+wordcloud>=1.9
+nltk>=3.8
+
+# ML / XAI
+scikit-learn>=1.4
+lime>=0.2
+shap>=0.45
+
+# DL — Colab already has torch; install the rest
+transformers>=5.0
+accelerate>=1.1
+evaluate>=0.4
+rouge_score>=0.1
+sentence-transformers>=5.0
+faiss-cpu>=1.8
+
+# Visualisation
+matplotlib>=3.8
+seaborn>=0.13
+
+# App
+streamlit>=1.35
