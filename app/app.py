@@ -31,8 +31,9 @@ def t5_generate(model, tokenizer, prompt, max_new_tokens=120):
         out = model.generate(**inputs, max_new_tokens=max_new_tokens)
     return tokenizer.decode(out[0], skip_special_tokens=True)
 
-def softmax(x):
-    e = np.exp(x - x.max())
+def scores_to_proba(scores):
+    """Convert decision_function scores to displayable probabilities via softmax."""
+    e = np.exp(scores - scores.max())
     return e / e.sum()
 
 st.title("📰 BBC News Assistant")
@@ -49,20 +50,27 @@ with tab1:
                               placeholder="Paste a news article here...")
     if st.button("Classify", type="primary"):
         if user_text.strip():
-            pred_label = clf_pipeline.predict([user_text])[0]
+            pred_raw = clf_pipeline.predict([user_text])[0]
 
-            # LinearSVC uses decision_function; apply softmax for confidence display
+            # Decode integer label → category string
+            if isinstance(pred_raw, (int, np.integer)):
+                pred_label = le.inverse_transform([pred_raw])[0]
+            else:
+                pred_label = str(pred_raw)
+
+            # Decision scores → softmax probabilities
             scores = clf_pipeline.decision_function([user_text])[0]
-            proba  = softmax(scores)
+            proba  = scores_to_proba(scores)
+            confidence = proba.max()
 
             col1, col2 = st.columns(2)
-            col1.metric("Predicted Category", str(pred_label).upper())
-            col2.metric("Confidence", f"{proba.max()*100:.1f}%")
+            col1.metric("Predicted Category", pred_label.upper())
+            col2.metric("Confidence", f"{confidence*100:.1f}%")
 
             prob_df = pd.DataFrame({
                 "Category":    le.classes_,
-                "Probability": proba
-            }).sort_values("Probability", ascending=True)
+                "Score":       proba,
+            }).sort_values("Score", ascending=True)
             st.bar_chart(prob_df.set_index("Category"))
         else:
             st.warning("Please enter some text.")
