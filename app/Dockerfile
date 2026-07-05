@@ -2,6 +2,9 @@ FROM python:3.11-slim
 
 WORKDIR /code
 
+# Install CPU-only torch first (avoids downloading 2 GB of CUDA libraries)
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
