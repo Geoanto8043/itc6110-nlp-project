@@ -97,3 +97,43 @@ NB1 and NB2 are CPU-only (sklearn, gensim, scipy have no MPS backends).
 ## Path note
 
 The project directory contains a Unicode curly apostrophe (`'`) in the path. The Claude Code `Read` and `Write` tools cannot resolve it. Use `Bash` with `glob.glob(os.path.expanduser("~/Desktop/Desktop*/..."))` for all file operations.
+
+
+## Report
+
+**File:** `report/ITC6110_report.md`  
+**Target:** 5,000 ± 500 words, submitted via Turnitin  
+**Deadline:** Week 13
+
+The skeleton is pre-filled with all known results (model metrics, architecture details, figure references, citations). The following sections still need content from the user before the report is complete:
+
+| Section | What's needed |
+|---------|---------------|
+| Title page | Team member names and submission date |
+| 1.2 Dataset justification | 2–3 sentences on why BBC News was chosen |
+| 1 (category table) | Per-category train/test counts (run `df.groupby(['category','split']).size()`) |
+| 2.2 Missing/duplicate values | Count of any missing rows / duplicates found in NB1 |
+| 2.4 (optional) | Before/after preprocessing example for one article |
+| 3.2 Word2Vec nearest neighbours | Top-5 similar words output for a sample query from NB1 |
+| 3.3 t-SNE | 2–3 sentence interpretation of the scatter plot |
+| 3.4 Word frequency | Description of word cloud / frequency figures |
+| 4.1.1 LDA K selection | Which K was chosen, what C_v score |
+| 4.1.2 LDA top words | Top-10 keywords per topic table |
+| 4.1.4 LDA discussion | How topics map to the 5 known categories |
+| 4.2.1 SVM comment | Why SVM outperforms others |
+| 4.2.1 XAI/LIME | Description of LIME explanation for sport article |
+| 4.2.1 Traditional ML F1 | Macro F1 values for SVM/LR/NB (check ml_results_summary.csv) |
+| 4.2.2 ROUGE-L results | Mean / best / worst ROUGE-L scores from NB3 output |
+| 4.2.2 RAG discussion | 2–3 sentences on what the ROUGE-L scores mean |
+| 4.2.3 Screenshots | 1–2 screenshots of the running Streamlit app |
+| 4.2.3 Deployment URL | HuggingFace Spaces URL once deployed |
+| 5.1 Conclusions | 3–4 key takeaways |
+| 5.2 Future work | 3–4 genuine future directions |
+
+**Results already confirmed and written into report:**
+- BiLSTM: acc=80.26%, macro_f1=0.793
+- DistilBERT: acc=97.53%, macro_f1=0.974
+- Linear SVM: acc=97.00%
+- Logistic Regression: acc=96.78%
+- Naive Bayes: acc=96.46%
+- All figures 01–18 generated and referenced
