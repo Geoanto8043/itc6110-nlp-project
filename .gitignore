@@ -1,13 +1,10 @@
-# Large model files
-models/
-
-# Processed data (reproducible from notebooks)
-data/processed/
+# DistilBERT checkpoints — too large for git (~2 GB of optimizer states)
+# Re-fine-tune on Colab in ~10 min on T4 GPU
+models/distilbert/
 
 # Python
 __pycache__/
 *.pyc
-*.pyo
 .venv/
 
 # Jupyter
@@ -16,5 +13,5 @@ __pycache__/
 # macOS
 .DS_Store
 
-# Secrets / env
+# Secrets
 .env
