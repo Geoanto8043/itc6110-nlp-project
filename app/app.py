@@ -7,10 +7,8 @@ from pathlib import Path
 from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
-# ── Page config ───────────────────────────────────────────────────────────────
 st.set_page_config(page_title="BBC News Assistant", page_icon="📰", layout="wide")
 
-# ── Load artefacts (cached) ───────────────────────────────────────────────────
 @st.cache_resource
 def load_classifier():
     with open("best_ml_pipeline.pkl", "rb") as f:
@@ -33,13 +31,15 @@ def t5_generate(model, tokenizer, prompt, max_new_tokens=120):
         out = model.generate(**inputs, max_new_tokens=max_new_tokens)
     return tokenizer.decode(out[0], skip_special_tokens=True)
 
-# ── Title ─────────────────────────────────────────────────────────────────────
+def softmax(x):
+    e = np.exp(x - x.max())
+    return e / e.sum()
+
 st.title("📰 BBC News Assistant")
 st.markdown("**ITC6110 NLP Group Project** — Text classification + RAG-powered Q&A")
 
 tab1, tab2 = st.tabs(["🏷️ Article Classifier", "💬 Sports Q&A (RAG)"])
 
-# ── Tab 1: Classifier ─────────────────────────────────────────────────────────
 with tab1:
     st.subheader("Article Category Classifier")
     st.markdown("Paste any news article and the model will classify it into one of 5 BBC categories.")
@@ -49,23 +49,24 @@ with tab1:
                               placeholder="Paste a news article here...")
     if st.button("Classify", type="primary"):
         if user_text.strip():
-            pred_id = clf_pipeline.predict([user_text])[0]
-            pred_label = le.classes_[pred_id]
-            proba = clf_pipeline.predict_proba([user_text])[0]
+            pred_label = clf_pipeline.predict([user_text])[0]
+
+            # LinearSVC uses decision_function; apply softmax for confidence display
+            scores = clf_pipeline.decision_function([user_text])[0]
+            proba  = softmax(scores)
 
             col1, col2 = st.columns(2)
-            col1.metric("Predicted Category", pred_label.upper())
+            col1.metric("Predicted Category", str(pred_label).upper())
             col2.metric("Confidence", f"{proba.max()*100:.1f}%")
 
             prob_df = pd.DataFrame({
-                "Category": le.classes_,
+                "Category":    le.classes_,
                 "Probability": proba
             }).sort_values("Probability", ascending=True)
             st.bar_chart(prob_df.set_index("Category"))
         else:
             st.warning("Please enter some text.")
 
-# ── Tab 2: RAG Q&A ────────────────────────────────────────────────────────────
 with tab2:
     st.subheader("Sports & News Q&A — Powered by RAG")
     st.markdown("Ask any question about sports or news. The system retrieves relevant BBC articles and generates an answer.")
