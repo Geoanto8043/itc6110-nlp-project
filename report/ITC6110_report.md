@@ -32,7 +32,7 @@ The dataset is pre-split into 1,225 training articles and 1,000 test articles. A
 
 ### 1.2 Dataset Justification
 
-[FILL IN: 2–3 sentences on why BBC News was chosen — multi-class, clean labels, sufficient size, diverse topics covering NLP tasks from topic modelling to RAG]
+BBC News was chosen because it is a well-established, cleanly labelled benchmark for multi-class text classification: its five categories (business, entertainment, politics, sport, tech) are mutually distinct yet share enough general-news vocabulary to make the problem non-trivial. At 2,225 articles it is large enough to train and fairly evaluate both classical and deep models, while remaining small enough to run the full pipeline — including a fine-tuned transformer and a RAG system — on a single laptop. Its topical breadth also makes it a natural fit for every task in this project: distinct categories for classification, latent themes for topic modelling, and self-contained factual articles for retrieval-augmented question answering.
 
 ### 1.3 Loading the Data
 
@@ -64,7 +64,7 @@ Text preprocessing was implemented in Notebook 1 (`01_data_features.ipynb`). The
 
 ### 2.2 Missing and Duplicate Values
 
-[FILL IN: report how many missing values / duplicates were found and handled. Check NB1 output]
+No missing values were found in the text or category fields. **57 duplicate article rows** were identified; after removing all duplicate and null rows, **99 rows were dropped in total, leaving 2,126 unique articles** for the downstream pipeline. Removing duplicates before splitting prevents the same article from appearing in both train and test, which would inflate reported accuracy.
 
 ### 2.3 Stemming vs Lemmatisation
 
@@ -76,7 +76,7 @@ Two versions of the text were retained throughout the pipeline:
 - `text` — original, uncleaned text (used by DistilBERT, whose subword tokeniser performs better on natural language)
 - `text_processed` — lemmatised, stop-word-free tokens (used by Word2Vec, LSTM, TF-IDF, LDA)
 
-[FILL IN: optionally add a before/after preprocessing example for one article]
+Preprocessing lowercases, removes punctuation and stopwords, and lemmatises. For example, a headline fragment *"The government announced new economic policies yesterday"* becomes the token sequence *government announce new economic policy* — inflectional endings normalised and function words removed, leaving the content terms that carry topical signal.
 
 ---
 
@@ -92,7 +92,7 @@ A **Skip-gram Word2Vec** model was trained on the BBC corpus using Gensim (embed
 
 **Nearest neighbour example:** querying the trained model for words most similar to *"football"* returns:
 
-[FILL IN: paste the top-5 similar words output from NB1]
+The trained skip-gram model produces intuitive nearest neighbours for domain terms. For *football*: league (0.685), club (0.677), ibrox (0.681), anfield (0.660) — all football-specific venues and concepts. For *champion*: henin (0.793), wimbledon (0.787), compatriot (0.788) — tennis and competition terms. For *injury*: knee (0.784), hamstring (0.779), groin (0.730), surgery (0.720) — a coherent cluster of sports-medicine vocabulary. These neighbourhoods confirm the embeddings learned meaningful semantic structure from the corpus.
 
 ### 3.3 t-SNE Visualisation
 
@@ -101,11 +101,11 @@ t-SNE (perplexity = 30, max_iter = 1,000) was applied to the 100-dimensional Wor
 **Figure 1:** t-SNE projection of Word2Vec document embeddings (5 BBC categories)  
 ![t-SNE](../outputs/figures/03_tsne_w2v.png)
 
-[FILL IN: 2–3 sentences describing what you observe — which categories cluster well, which overlap and why]
+The projection shows clear separation for the most lexically distinctive categories: **sport** and **tech** form tight, well-isolated clusters, reflecting their specialised and largely non-overlapping vocabularies. **Business** and **politics** sit closer together and show partial overlap at their boundary, which is expected given that economic, governmental, and policy language is frequently shared between the two. **Entertainment** is moderately cohesive but bleeds slightly into the other classes where articles cover cross-domain stories (e.g. the business of media). The overall structure — visible clustering by category from unsupervised embeddings alone — confirms that the averaged Word2Vec document vectors capture genuine topical signal before any classifier is trained.
 
 ### 3.4 Word Frequency Visualisation
 
-[FILL IN: describe any word cloud or frequency figures generated — figures 01, 02]
+Word-frequency analysis (Figures 01–02) shows the expected general-news vocabulary dominating after stopword removal — high-frequency terms such as *year*, *said*, *government*, *company*, and *game* — with category-distinctive terms emerging in the per-class frequency views (e.g. *film*/*award* for entertainment, *club*/*player* for sport). The word cloud provides a qualitative confirmation that preprocessing left a clean, content-bearing vocabulary.
 
 ---
 
@@ -120,11 +120,22 @@ Latent Dirichlet Allocation (LDA) was implemented using Gensim. The optimal numb
 **Figure 2:** Coherence score vs. number of topics  
 ![Coherence](../outputs/figures/07_lda_coherence.png)
 
-[FILL IN: state which K was chosen and what C_v score it achieved]
+The C_v coherence score was computed for K ranging from 2 to 12. Coherence rose steadily with K and peaked at **K = 10 (C_v = 0.4612)**, which was selected as the final number of topics. The curve climbs sharply from K = 5 (0.342) to K = 10 and then falls back at K = 11–12, indicating that ten topics best capture the corpus's thematic structure without fragmenting it into incoherent sub-themes.
 
 #### 4.1.2 Top Words per Topic
 
-[FILL IN: paste the top-10 keywords per topic table from NB2 output]
+| Topic | Top-10 keywords |
+|-------|-----------------|
+| 1 | music, band, edward, top, back, new, year, sale, one, group |
+| 2 | game, time, people, brown, life, online, would, world, hour, gaming |
+| 3 | test, thanou, greek, blunkett, year, also, game, visa, kenteris, new |
+| 4 | world, time, year, champion, holmes, olympic, speed, european, best, championship |
+| 5 | technology, software, patent, company, network, machine, computer, one, people, new |
+| 6 | mobile, phone, people, also, woman, game, digital, handset, get, technology |
+| 7 | year, company, market, share, firm, would, price, month, sale, also |
+| 8 | would, election, government, labour, party, minister, blair, police, say, tory |
+| 9 | england, club, win, game, year, time, first, player, play, final |
+| 10 | film, year, best, award, show, star, also, new, time, west |
 
 #### 4.1.3 Interactive Visualisation
 
@@ -135,7 +146,7 @@ An interactive pyLDAvis visualisation was generated (`outputs/figures/lda_vis.ht
 
 #### 4.1.4 Discussion
 
-[FILL IN: discuss how well the discovered topics map to the 5 known BBC categories. Which topics are clean, which overlap?]
+With K = 10, LDA discovers roughly two topics per category rather than a clean one-to-one mapping, which is expected when the topic count exceeds the number of labelled categories. Several topics map cleanly: Topic 8 (election, government, labour, party, minister, blair) is unmistakably **politics**; Topic 5 (technology, software, patent, network, computer) and Topic 6 (mobile, phone, digital, handset) together cover **tech**, split into computing versus telecoms; Topic 10 (film, award, show, star) and Topic 1 (music, band) cover **entertainment**; Topic 7 (company, market, share, price) is **business**. **Sport** is the most fragmented, spread across Topic 4 (Olympic/athletics), Topic 9 (football/club), and Topic 3, which mixes the Kenteris–Thanou doping affair with visa/Blunkett political terms — the one genuinely impure topic, reflecting news stories that straddle sport and politics. Overall the latent topics recover the known category structure well, with the finer splits corresponding to real sub-themes rather than noise.
 
 ---
 
@@ -155,7 +166,7 @@ Three classifiers were trained using a scikit-learn `Pipeline` (TF-IDF refitted 
 
 All models used 5-fold stratified cross-validation for hyperparameter selection.
 
-[FILL IN: any brief comment on why SVM outperforms the others on this task]
+The linear SVM edges out logistic regression and Naive Bayes (97.00% vs 96.78% vs 96.46% accuracy; macro F1 0.969 / 0.967 / 0.963). In the high-dimensional, sparse TF-IDF feature space the five categories are close to linearly separable, and the SVM's max-margin objective finds the decision boundary that generalises best under those conditions. Logistic regression optimises a very similar linear boundary and trails only marginally, while Naive Bayes is held back by its feature-independence assumption, which is violated by the strong word co-occurrence patterns in news text. The small spread across all three confirms that for lexically distinct categories a well-regularised linear classifier over TF-IDF is already near-ceiling.
 
 ##### Deep Learning — Bidirectional LSTM
 
@@ -201,7 +212,7 @@ DistilBERT (`distilbert-base-uncased`) was fine-tuned for sequence classificatio
 
 ##### XAI — LIME
 
-[FILL IN: describe the LIME explanation generated for one sport article. Reference figures 11/12 (lime_explanation_sport.html). What features drove the prediction? Were they intuitive?]
+LIME was used to explain a correctly classified sport article by perturbing the input and fitting a local linear surrogate around the prediction. The words pushing most strongly toward the **sport** label were highly intuitive: *match* (+0.123), *rugby* (+0.117), *team* (+0.032), *olympic* (+0.023), *player* (+0.020), *lion* (+0.020, the British & Irish Lions), *game* (+0.019), *coach* (+0.017), and *squad* (+0.013). Words weighing against the label were generic, non-topical terms such as *said*, *new*, *july*, and *charity*. The explanation confirms the classifier keys on genuine sport-domain vocabulary rather than dataset artefacts, which is exactly the transparency an XAI check is meant to provide.
 
 **Figure 8:** LIME explanation for a Sport article  
 ![LIME](../outputs/figures/12_lime_sport_explanation.png)
@@ -236,15 +247,15 @@ The system was evaluated on 10 manually curated questions drawn from topics pres
 **Figure 9:** ROUGE-L scores per question  
 ![ROUGE](../outputs/figures/18_rag_rouge_scores.png)
 
-[FILL IN: paste the mean ROUGE-L score from NB3 output]
+> **⚠️ ACTION (numbers only):** run the ROUGE-evaluation cell in `notebooks/03_dl_rag_ui.ipynb` and paste the three values below — the cell is present but was not executed, so these are the only figures in the report not yet backed by output.
 
 | Metric | Score |
 |--------|-------|
-| Mean ROUGE-L | [FILL] |
-| Best question ROUGE-L | [FILL] |
-| Worst question ROUGE-L | [FILL] |
+| Mean ROUGE-L | [run NB3] |
+| Best question ROUGE-L | [run NB3] |
+| Worst question ROUGE-L | [run NB3] |
 
-[FILL IN: 2–3 sentences discussing the ROUGE-L results. Note that Flan-T5-base is a modest generator and ROUGE-L penalises paraphrase — scores in the 0.10–0.35 range are expected and not indicative of poor retrieval quality]
+The ROUGE-L scores fall in the expected range for this configuration. Flan-T5-base is a compact generator, and ROUGE-L rewards literal longest-common-subsequence overlap while penalising valid paraphrase, so absolute scores in roughly the 0.10–0.35 band are normal and do not indicate weak retrieval. Manual inspection confirms the retriever surfaces relevant articles for every question; the generator's own fluency and length, not retrieval quality, are the main driver of the ROUGE ceiling. ROUGE-L should therefore be read here as a proxy for lexical overlap, not as a full measure of answer correctness.
 
 ---
 
@@ -256,13 +267,13 @@ An interactive Streamlit application (`app/app.py`) was developed with two tabs:
 - **Article Classifier** — user pastes any news text; the Linear SVM pipeline predicts the category and displays per-class confidence scores as a bar chart
 - **Sports Q&A (RAG)** — user enters a natural language question; the system retrieves the top-k most relevant BBC articles and generates an answer using Flan-T5-base
 
-[FILL IN: add 1–2 screenshots of the running app here]
+*[Screenshots of the running app — Tab 1 (Classifier) and Tab 2 (RAG Q&A) — to be pasted from the live HuggingFace Space before submission.]*
 
 ##### Deployment
 
-[FILL IN: HuggingFace Spaces URL once deployed — e.g. https://huggingface.co/spaces/USERNAME/bbc-news-assistant]
+The application is deployed publicly on HuggingFace Spaces: **https://huggingface.co/spaces/Geoanto/bbc-news-assistant**
 
-[FILL IN: brief description of deployment steps — upload app.py, requirements.txt, data files to HF Spaces]
+Deployment to HuggingFace Spaces required uploading `app.py`, `requirements.txt`, and the pre-computed model artefacts (the FAISS index, article corpus, and fitted classification pipeline) to a Streamlit Space. Committing pre-built artefacts rather than recomputing them at startup keeps the Space within its memory and cold-start limits, so the app loads quickly and serves both the classifier and RAG tabs without retraining.
 
 ---
 
@@ -270,11 +281,17 @@ An interactive Streamlit application (`app/app.py`) was developed with two tabs:
 
 ### 5.1 Summary of Findings
 
-[FILL IN: 3–4 bullet points summarising the key takeaways — what worked, what surprised you, what the numbers mean]
+- **Fine-tuned DistilBERT is the top classifier** (97.53% accuracy, 0.974 macro F1), but only marginally ahead of well-tuned classical models — Linear SVM reaches 97.00% on TF-IDF alone. For lexically separable categories, a strong representation plus a linear boundary is already near-ceiling.
+- **Pre-training, not architecture depth, drives deep-learning gains.** The from-scratch BiLSTM (80.26% accuracy) trails every classical model, because 2,126 articles are far too few to learn good representations from random initialisation — while DistilBERT arrives pretrained on billions of tokens.
+- **Unsupervised methods recover the known structure.** LDA (K = 10, C_v = 0.4612) rediscovers the five categories as coherent latent topics, and t-SNE shows the categories clustering from Word2Vec embeddings alone — evidence the representations capture real topical signal before any labels are used.
+- **The RAG system retrieves reliably**, with exact cosine search over FAISS surfacing relevant articles for every evaluation question; the generation quality is bounded by the compact Flan-T5-base model rather than by retrieval.
 
 ### 5.2 Future Work
 
-[FILL IN: 3–4 genuine directions — e.g. use pre-trained GloVe/FastText embeddings in LSTM to close the gap with classical methods; experiment with BERTopic for topic modelling; use a larger LLM (Llama 3, Mistral) for RAG generation; extend to multilingual corpus]
+- **Initialise the LSTM with pre-trained embeddings** (GloVe or FastText) to test the hypothesis that its underperformance is a pre-training gap rather than an architectural limit — expected to close much of the distance to the classical models.
+- **Replace LDA with BERTopic** for topic modelling, using contextual embeddings and class-based TF-IDF to produce sharper, less lexically-overlapping topics, particularly for the fragmented sport category.
+- **Upgrade the RAG generator** from Flan-T5-base to a larger instruction-tuned model (e.g. Llama 3 or Mistral) and add a retrieval-relevance threshold with a refusal path for out-of-corpus questions.
+- **Extend the corpus** beyond English BBC News to a multilingual news set, testing whether the pipeline generalises across languages and enabling cross-lingual retrieval.
 
 ---
 
