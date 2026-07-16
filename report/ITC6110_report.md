@@ -64,7 +64,7 @@ Text preprocessing was implemented in Notebook 1 (`01_data_features.ipynb`). The
 
 ### 2.2 Missing and Duplicate Values
 
-No missing values were found in any field. Checking for exact duplicates (rows identical across all columns) flagged **57 rows**. Deduplication was then applied on the article **text** alone (`drop_duplicates(subset='text')`), which removed **99 rows in total** — the 57 exact duplicates plus 42 further rows in which the same article text appeared with differing metadata, most notably the same article present in both the train and test split. This left **2,126 unique articles**. Deduplicating on text rather than on the full row is deliberate: it is what catches an article that appears in both splits and would otherwise leak between train and test, inflating reported accuracy.
+No missing values were found in any field. Checking for exact duplicates (rows identical across all columns) flagged **57 rows**. Deduplication was then applied on the article **text** alone (`drop_duplicates(subset='text')`), which removed **99 rows in total** — the 57 exact duplicates plus **42 articles that appeared in both the train and test split** (identical text, different split label). This left **2,126 unique articles**. Deduplicating on text rather than on the full row is deliberate: those 42 cross-split articles are a genuine train/test leak — an article seen in training would be classified correctly at test time for free — so removing them before modelling prevents artificially inflated test accuracy.
 
 ### 2.3 Stemming vs Lemmatisation
 
