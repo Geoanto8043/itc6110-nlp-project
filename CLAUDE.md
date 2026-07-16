@@ -130,10 +130,20 @@ The skeleton is pre-filled with all known results (model metrics, architecture d
 | 5.1 Conclusions | 3–4 key takeaways |
 | 5.2 Future work | 3–4 genuine future directions |
 
-**Results already confirmed and written into report:**
-- BiLSTM: acc=80.26%, macro_f1=0.793
-- DistilBERT: acc=97.53%, macro_f1=0.974
-- Linear SVM: acc=97.00%
-- Logistic Regression: acc=96.78%
-- Naive Bayes: acc=96.46%
-- All figures 01–18 generated and referenced
+**Authoritative results** — from the full NB3 re-run of 2026-07-16. Earlier figures (DistilBERT 97.53%/0.974, BiLSTM 80.26%/0.793) were stale and are superseded:
+
+| Model | Accuracy | Macro F1 |
+|-------|----------|----------|
+| DistilBERT (fine-tuned) | 97.21% | 0.9709 |
+| Linear SVM | 97.00% | 0.9693 |
+| Logistic Regression | 96.78% | 0.9669 |
+| Naive Bayes | 96.46% | 0.9628 |
+| BiLSTM (from scratch) | 81.55% | 0.8099 |
+
+RAG: mean ROUGE-L 0.1549 (best 0.3077, worst 0.0000 on 2/10 questions, median 0.1483).
+
+Corpus: 2,225 raw → **2,126 after dropping 99 duplicates**; splits are **1,194 train / 932 test**. Anywhere this repo says the processed corpus or TF-IDF matrix is 2,225 rows, it is wrong.
+
+**Do not restate the DistilBERT/SVM gap as "the transformer won."** It is 0.21 points = 2 articles out of 932, and it flipped sign between two runs of the same seeded notebook. The real finding is that the two *deep* models are 15.7 points apart while DistilBERT and a bag-of-words SVM are 0.21 apart — pre-training explains the results, not depth.
+
+All figures 01–18 generated and referenced.
