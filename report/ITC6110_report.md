@@ -2,7 +2,7 @@
 ## Group Project Report  
 **Module:** ITC 6110 — Natural Language Processing  
 **Term:** Spring Semester 2025  
-**Team Members:** [NAME 1] · [NAME 2] · [NAME 3]  
+**Team Members:** George Antonakis · Orestis Pappas · Samuel Cook 
 **Submission Date:** [DATE]  
 
 ---
@@ -64,7 +64,7 @@ Text preprocessing was implemented in Notebook 1 (`01_data_features.ipynb`). The
 
 ### 2.2 Missing and Duplicate Values
 
-No missing values were found in the text or category fields. **57 duplicate article rows** were identified; after removing all duplicate and null rows, **99 rows were dropped in total, leaving 2,126 unique articles** for the downstream pipeline. Removing duplicates before splitting prevents the same article from appearing in both train and test, which would inflate reported accuracy.
+No missing values were found in any field. Checking for exact duplicates (rows identical across all columns) flagged **57 rows**. Deduplication was then applied on the article **text** alone (`drop_duplicates(subset='text')`), which removed **99 rows in total** — the 57 exact duplicates plus 42 further rows in which the same article text appeared with differing metadata, most notably the same article present in both the train and test split. This left **2,126 unique articles**. Deduplicating on text rather than on the full row is deliberate: it is what catches an article that appears in both splits and would otherwise leak between train and test, inflating reported accuracy.
 
 ### 2.3 Stemming vs Lemmatisation
 
