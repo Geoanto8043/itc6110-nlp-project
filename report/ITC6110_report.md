@@ -84,11 +84,11 @@ Preprocessing lowercases, removes punctuation and stopwords, and lemmatises. For
 
 ### 3.1 TF-IDF
 
-A TF-IDF matrix was constructed over the full corpus (2,225 × 10,000 features) using scikit-learn's `TfidfVectorizer`. This sparse representation captures term importance relative to the corpus and serves as input for the classical ML classifiers in Section 4.2.
+A TF-IDF matrix was constructed over the deduplicated corpus (2,126 × 10,000 features) using scikit-learn's `TfidfVectorizer`. This sparse representation captures term importance relative to the corpus and serves as input for the classical ML classifiers in Section 4.2.
 
 ### 3.2 Word2Vec Embeddings
 
-A **Skip-gram Word2Vec** model was trained on the BBC corpus using Gensim (embedding size = 100, window = 5, min_count = 2, epochs = 10). Document-level vectors were obtained by averaging the word vectors of all tokens in each article, producing a (2,225 × 100) matrix.
+A **Skip-gram Word2Vec** model was trained on the BBC corpus using Gensim (embedding size = 100, window = 5, min_count = 2, epochs = 10). Document-level vectors were obtained by averaging the word vectors of all tokens in each article, producing a (2,126 × 100) matrix.
 
 **Nearest neighbour example:** querying the trained model for words most similar to *"football"* returns:
 
@@ -225,7 +225,7 @@ LIME was used to explain a correctly classified sport article by perturbing the 
 
 The RAG pipeline consists of two components:
 
-**Retriever:** Sentence embeddings were generated using `sentence-transformers/all-MiniLM-L6-v2` (384 dimensions). All 2,225 articles were encoded and stored in a FAISS `IndexFlatIP` index with L2-normalised vectors, providing exact cosine similarity search.
+**Retriever:** Sentence embeddings were generated using `sentence-transformers/all-MiniLM-L6-v2` (384 dimensions). All 2,126 articles were encoded and stored in a FAISS `IndexFlatIP` index with L2-normalised vectors, providing exact cosine similarity search.
 
 **Generator:** Flan-T5-base (`google/flan-t5-base`) was used for answer generation via `AutoModelForSeq2SeqLM`. The prompt template provides retrieved article snippets as context and instructs the model to answer only from the provided sources.
 
