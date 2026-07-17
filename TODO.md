@@ -33,6 +33,10 @@ the old numbers (BiLSTM 81.12% / DistilBERT 97.00%), which **contradict the repo
 Fully rewritten on 2026-07-16 against the fresh NB3 run, then restructured with appendices to control
 length. All metrics, tables, figure links and discussion sections are filled in and verified.
 
+- [ ] **Regenerate `report/ITC6110_report.docx`** — the committed `.docx` is George's earlier version:
+      stale numbers (DistilBERT 97.53 / BiLSTM 80.26) and shorter content. The `.md` is now authoritative
+      (your run: 97.21 / 81.55, with George's verified §2.2 folded in). Export a fresh `.docx` from it
+      before submitting, or the two files disagree. (George offered to handle the docx export.)
 - [ ] Team member names + submission date (title page — 4 placeholders)
 - [ ] Screenshot of Streamlit app — Tab 1 (Classifier) working
 - [ ] Screenshot of Streamlit app — Tab 2 (RAG Q&A) working

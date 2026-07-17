@@ -65,9 +65,7 @@ Contraction expansion is placed deliberately **before** punctuation removal: rev
 
 ### 2.2 Missing and Duplicate Values
 
-The raw corpus contains **no missing values** in any column. However, `df.duplicated()` identified **57 fully duplicated rows**, and deduplicating on the `text` column removed **99 rows** in total — the larger figure reflecting articles republished under different category or split assignments.
-
-All 99 were removed, leaving **2,126 articles**. This deduplicated corpus is the basis for *every* downstream step. Leaving duplicates in place would have been actively harmful: an article appearing in both train and test would leak the test set into training and inflate our reported accuracy.
+No missing values were found in any field. Checking for exact duplicates (rows identical across all columns) flagged **57 rows**. Deduplication was then applied on the article **text** alone (`drop_duplicates(subset='text')`), which removed **99 rows in total** — the 57 exact duplicates plus **42 articles that appeared in both the train and test split** (identical text, different split label). This left **2,126 unique articles**. Deduplicating on text rather than on the full row is deliberate: those 42 cross-split articles are a genuine train/test leak — an article seen in training would be classified correctly at test time for free — so removing them before modelling prevents artificially inflated test accuracy.
 
 | Category      | Train | Test | Total |
 |---------------|-------|------|-------|
