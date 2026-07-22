@@ -9,6 +9,7 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 st.set_page_config(page_title="BBC News Assistant", page_icon="📰", layout="wide")
 
+# ── load + cache the heavy artefacts once per session (not on every click) ────
 @st.cache_resource
 def load_classifier():
     with open("best_ml_pipeline.pkl", "rb") as f:
@@ -17,6 +18,7 @@ def load_classifier():
 
 @st.cache_resource
 def load_rag():
+    # retriever encoder + FAISS index + article text + Flan-T5 generator
     encoder  = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
     index    = faiss.read_index("faiss_index.index")
     articles = pd.read_csv("articles_for_rag.csv")
@@ -26,6 +28,7 @@ def load_rag():
     return encoder, index, articles, t5_tok, t5_mdl
 
 def t5_generate(model, tokenizer, prompt, max_new_tokens=120):
+    # run the prompt through Flan-T5 and decode the answer back to text
     inputs = tokenizer(prompt, return_tensors="pt", max_length=512, truncation=True)
     with torch.no_grad():
         out = model.generate(**inputs, max_new_tokens=max_new_tokens)
@@ -33,6 +36,7 @@ def t5_generate(model, tokenizer, prompt, max_new_tokens=120):
 
 def scores_to_proba(scores):
     """Convert decision_function scores to displayable probabilities via softmax."""
+    # LinearSVC has no predict_proba, so we softmax the decision scores just for the UI bar
     e = np.exp(scores - scores.max())
     return e / e.sum()
 
@@ -41,6 +45,7 @@ st.markdown("**ITC6110 NLP Group Project** — Text classification + RAG-powered
 
 tab1, tab2 = st.tabs(["🏷️ Article Classifier", "💬 Sports Q&A (RAG)"])
 
+# ── Tab 1: paste an article → predicted BBC category + confidence ─────────────
 with tab1:
     st.subheader("Article Category Classifier")
     st.markdown("Paste any news article and the model will classify it into one of 5 BBC categories.")
@@ -58,7 +63,7 @@ with tab1:
             else:
                 pred_label = str(pred_raw)
 
-            # Decision scores → softmax probabilities
+            # Decision scores → softmax probabilities (relative confidence, not calibrated)
             scores = clf_pipeline.decision_function([user_text])[0]
             proba  = scores_to_proba(scores)
             confidence = proba.max()
@@ -67,6 +72,7 @@ with tab1:
             col1.metric("Predicted Category", pred_label.upper())
             col2.metric("Confidence", f"{confidence*100:.1f}%")
 
+            # show all 5 category scores as a bar chart
             prob_df = pd.DataFrame({
                 "Category":    le.classes_,
                 "Score":       proba,
@@ -75,6 +81,7 @@ with tab1:
         else:
             st.warning("Please enter some text.")
 
+# ── Tab 2: ask a question → RAG retrieves articles + generates an answer ───────
 with tab2:
     st.subheader("Sports & News Q&A — Powered by RAG")
     st.markdown("Ask any question about sports or news. The system retrieves relevant BBC articles and generates an answer.")
@@ -87,6 +94,7 @@ with tab2:
     if st.button("Ask", type="primary"):
         if query.strip():
             with st.spinner("Retrieving articles and generating answer..."):
+                # embed the query and pull the k nearest articles from FAISS
                 q_vec = encoder.encode([query], normalize_embeddings=True).astype(np.float32)
                 scores, indices = faiss_index.search(q_vec, k_val)
 
@@ -95,6 +103,7 @@ with tab2:
                          "score": float(s)}
                         for s, i in zip(scores[0], indices[0])]
 
+                # stitch the retrieved articles into the prompt context
                 context = "\n\n".join(
                     f"Article {i+1} [{h['category']}]: {h['text'][:400]}"
                     for i, h in enumerate(hits)
@@ -107,6 +116,7 @@ with tab2:
 
             st.success(f"**Answer:** {answer}")
 
+            # let the user inspect the sources behind the answer
             with st.expander("📄 Retrieved Articles"):
                 for i, h in enumerate(hits):
                     st.markdown(f"**Article {i+1}** — *{h['category']}* (score: {h['score']:.3f})")

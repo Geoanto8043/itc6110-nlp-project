@@ -1,6 +1,6 @@
 # Project Walkthrough — BBC News NLP Pipeline
 
-This document exists so you can genuinely understand and defend every part of this project in front of the examiners, even though George wrote most of the code. Read it section by section, in the order the notebooks run. Each section explains: **what it does, why it was done this way, the real numbers produced, and what you might get asked about it.**
+This document exists so you can genuinely understand and defend every part of this project in front of the examiners. Read it section by section, in the order the notebooks run. Each section explains: **what it does, why it was done this way, the real numbers produced, and what you might get asked about it.**
 
 The project is an end-to-end NLP pipeline on the **BBC News dataset**: 2,225 news articles, hand-labelled into 5 categories (business, entertainment, politics, sport, tech), collected 2004–2005 for a well-known academic clustering paper (Greene & Cunningham, 2006). It's the "MNIST of text classification" — small, clean, balanced enough to be tractable on a laptop, but real enough to need genuine NLP work.
 
