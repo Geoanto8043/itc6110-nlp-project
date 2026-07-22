@@ -2,7 +2,7 @@
 ## Group Project Report  
 **Module:** ITC 6110 — Natural Language Processing  
 **Term:** Spring Semester 2025  
-**Team Members:** [NAME 1] · [NAME 2] · [NAME 3]  
+**Team Members:** George Antonakis · Samuel Cook · Orestis Pappas  
 **Submission Date:** [DATE]  
 
 ---
@@ -326,7 +326,7 @@ The system was evaluated on **10 manually curated questions** grounded in corpus
 
 A mean ROUGE-L of 0.155 looks poor, and read naively suggests a broken system. We argue the metric is measuring the wrong thing, and that the low scores are substantially an artefact of evaluation design rather than evidence of failure.
 
-**ROUGE-L rewards lexical overlap with a reference string, not correctness.** It was designed for summarisation, where outputs are long and reference-like. Our references are full sentences ("Tiger Woods is a professional golfer"), while an instruction-tuned model asked a direct question answers tersely — plausibly "golf". That answer is completely correct and scores **exactly zero**, because "golf" and "golfer" are different tokens and no common subsequence exists. Both zero-scoring questions are of this form — short-factoid questions whose ideal answer is one or two words — a strong indication that the metric, not the system, produced them. A terse correct answer and a fluent wrong answer can receive identical ROUGE-L scores; this is a well-documented limitation of n-gram overlap metrics.
+**ROUGE-L rewards lexical overlap with a reference string, not correctness.** It was designed for summarisation, where outputs are long and reference-like. Our references are full sentences, while an instruction-tuned model asked a direct question answers tersely. The clearest case is question 3: asked *"What sport does Tiger Woods play?"*, the system answered **"golf"** — completely correct — and scored **exactly 0.0000** against the reference "Tiger Woods is a professional golfer", because the two share no common subsequence at the token level. The generated answers are reproduced in **Appendix C.1**, and they show the same pattern behind the other zero: "Who won the Formula One championship?" returned "ivanovic", a retrieval-grounded but wrong name, scoring zero for being wrong. One zero means the metric failed; the other means the system failed. **ROUGE-L cannot distinguish these two cases**, which is precisely our objection to it as a headline number.
 
 **Retrieval can be assessed independently, and it is sound.** The trace for "Who won the football championship?" (Appendix C.2) returns an FA Cup report, a Champions League report, and — revealingly — a review of the video game *Championship Manager*, correctly labelled `tech`. That third hit is not an error but a demonstration that the retriever matches on **semantics rather than keywords**: it understood "championship" in a context the query never disambiguated. The absolute scores (~0.3) are modest but expected — a six-word question compared against 400-word documents yields inherently low cosine between a focused query vector and a diffuse document vector. The scores are informative in their *ranking*, not their magnitude.
 
@@ -370,7 +370,7 @@ Informal use surfaced three limitations, discussed with proposed improvements in
 
 **Unsupervised topic modelling found structure the labels do not encode.** Coherence optimisation selected ten topics, not five, subdividing categories along real fault lines, and Topic 3 isolated a specific news event (the Kenteris/Thanou doping affair) cutting across categories entirely. The t-SNE projection shows the same sub-structure geometrically, and a controlled re-run on sport alone reproduced it independently. The editorial taxonomy is coarser than the corpus.
 
-**Our RAG evaluation measured the wrong thing, and we can say why.** Mean ROUGE-L of 0.155 reads as failure but substantially reflects a metric that scores a correct one-word answer at zero when the reference is a full sentence — exactly what happened on both zero-scoring questions. Retrieval, assessed independently, is sound; the genuine limitations are generator size and a corpus that cannot answer some questions we posed.
+**Our RAG evaluation measured the wrong thing, though the system has real faults too.** Mean ROUGE-L of 0.155 reads as outright failure, but inspecting the generated answers shows six of ten are substantively correct — including "golf", which scored zero. The metric ranks these ten answers in an order close to unrelated to their quality, so it cannot support the conclusion its headline number invites. That said, the generations also expose genuine errors: four answers are retrieval-grounded but factually wrong, the signature failure of a 250M-parameter generator. The honest summary is that ROUGE-L understates this system *and* the system is weaker than a corrected metric would show — which is exactly why retrieval and generation should have been measured separately.
 
 **Explainability confirmed the models learned domain-appropriate features.** LIME attributed a sport prediction overwhelmingly to `match` and `rugby`, read `lion` in its sporting sense, and treated generic news vocabulary as evidence *against* the class — independently validating a preprocessing decision made on other grounds.
 
@@ -488,20 +488,24 @@ That a controlled subset independently reproduces the athletics/club-sport divis
 
 ### C.1 Per-Question ROUGE-L Scores
 
-| Question | ROUGE-L |
-|----------|---------|
-| Who is Michael Phelps? | 0.1538 |
-| What is the UEFA Champions League? | 0.3077 |
-| What sport does Tiger Woods play? | 0.0000 |
-| What happened in the Athens Olympics? | 0.1935 |
-| Who is Ronaldinho? | 0.1429 |
-| What is the Six Nations rugby tournament? | 0.1333 |
-| Who is Roger Federer? | 0.3077 |
-| What is cricket's Ashes series? | 0.1429 |
-| Who won the Formula One championship? | 0.0000 |
-| What is the Premier League? | 0.1667 |
+| Question | Generated answer | ROUGE-L | Correct? |
+|----------|------------------|---------|----------|
+| Who is Michael Phelps? | "American sprinter" | 0.1538 | ✗ (swimmer) |
+| What is the UEFA Champions League? | "Champions League" | 0.3077 | ✓ |
+| What sport does Tiger Woods play? | "golf" | 0.0000 | ✓ |
+| What happened in the Athens Olympics? | "kostas kenteris and katerina thanou have been suspended after failing to take drugs tests before the athens olympics" | 0.1935 | ✓ |
+| Who is Ronaldinho? | "barcelona s ronaldinho" | 0.1429 | ✓ |
+| What is the Six Nations rugby tournament? | "rugby world cup" | 0.1333 | ✗ |
+| Who is Roger Federer? | "nice bloke fantastic tennis player" | 0.3077 | ✓ |
+| What is cricket's Ashes series? | "autumn series" | 0.1429 | ✗ |
+| Who won the Formula One championship? | "ivanovic" | 0.0000 | ✗ |
+| What is the Premier League? | "Football league" | 0.1667 | ✓ |
 
 Mean 0.1549 · Median 0.1483 · Best 0.3077 · Worst 0.0000 (2 of 10)
+
+**The scores do not track correctness.** Six of ten answers are substantively correct, yet the highest score awarded is 0.3077 and the correct "golf" scores zero. Conversely "autumn series" (wrong) outscores "golf" (right), and the longest answer — the Athens Olympics response, which is accurate and detailed — earns only 0.1935 because it phrases the fact differently from our reference. Ranking these ten answers by ROUGE-L produces an ordering close to unrelated to ranking them by quality, which is the strongest available evidence that the metric is unsuited to short-factoid QA of this kind.
+
+Two failure modes are visible in the generations themselves. "American sprinter" for Michael Phelps and "ivanovic" for the Formula One question are **retrieval-grounded but wrong** — the model has pulled a plausible-looking entity from a retrieved sports article rather than the correct one, which is the classic small-generator failure. "rugby world cup" for the Six Nations is the same. These are genuine system errors and we do not excuse them; our argument is only that ROUGE-L neither identifies nor penalises them distinguishably from correct answers.
 
 ### C.2 Retrieval Trace Example
 
