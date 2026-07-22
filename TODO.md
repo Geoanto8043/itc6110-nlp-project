@@ -1,5 +1,46 @@
 # ITC6110 Project — Remaining Tasks
 
+## 🚨 DOCX vs notebooks — consistency audit (2026-07-22)
+
+Full audit of `report/ITC6110_report.docx` against the notebooks' saved outputs.
+**All 24 headline metrics match the notebooks exactly.** Issues found, worst first:
+
+- [ ] **FALSE METHODOLOGY CLAIM in the .docx — must be removed.** §4.2.1 states: *"Five-fold
+      stratified cross-validation on the training split was used for hyperparameter selection."*
+      **Notebook 2 performs no cross-validation of any kind** — no `GridSearchCV`, `cross_val_score`,
+      `StratifiedKFold`, or `cv=` anywhere. The three classifiers are fit once with hardcoded
+      hyperparameters (`C=1.0`, `alpha=0.1`). Claiming unperformed methodology in an assessed report
+      is a serious problem and it is trivially checkable from the notebook. The `.md` does **not**
+      contain this claim — delete the sentence from the `.docx`.
+- [ ] **.docx RAG discussion is contradicted by the saved run.** It claims *"Both zero-scoring
+      questions are of this short-factoid form, a strong sign the metric, not the system, produced
+      them"* and *"the retriever surfaces relevant articles for every question"*. The saved answers
+      show only ONE zero is a metric artefact ("golf", correct). The other — "Who won the Formula One
+      championship?" → **"ivanovic"** — is simply wrong. Four of ten answers are factually wrong
+      ("American sprinter" for Phelps, "rugby world cup" for Six Nations, "autumn series" for Ashes).
+      The `.md` was corrected on 2026-07-22; port that corrected §4.2.2 + §5.1 into the `.docx`.
+- [x] Title page reconciled — `.md` now matches `.docx` (Term Spring Semester 2026, 22 July 2026,
+      name order George · Orestis · Samuel). The `.md` previously said 2025 with no date.
+- [x] `Grootendorst (2022)` added to `.md` references — it cites BERTopic in future work (docx had it)
+- [ ] **`.docx` has no appendices.** The `.md` carries Appendices A–D (per-question ROUGE table with
+      generated answers, full coherence scan, topic table, sport-only cross-check, retrieval trace,
+      UX evaluation). Decide whether to include them in the submitted `.docx` — Appendix C.1 is the
+      evidence base for the whole ROUGE argument.
+- [ ] Minor: the two documents interpret t-SNE differently. `.docx` says *"sport and tech form tight,
+      well-isolated clusters"*; the `.md` (written from the figure) says tech bleeds into business and
+      that business/politics are the adjacent pair. Reconcile to one reading — the figure supports the
+      `.md`'s version.
+- [ ] Minor: the §2.4 before/after preprocessing examples differ between the two documents
+      (`.docx` uses a Bupa Great Ireland Run fragment; `.md` uses a ringtone-regulation article).
+      Not an error, but pick one for consistency.
+
+**Verified consistent** (docx = notebooks, no action): all five models' accuracy and macro F1;
+LDA K=10 / C_v=0.4612 / K=5=0.342; corpus 2,225→2,126 with 99 = 57 exact + 42 cross-split;
+1,194/932 splits; TF-IDF 2,126×10,000; Word2Vec neighbour similarities; LIME weights
+(match +0.123, rugby +0.117); RAG mean 0.1549 / best 0.3077 / worst 0.0000.
+
+---
+
 ## ⚠️ Known landmine — read before re-running Notebook 3
 
 **The `app_code` cell near the end of NB3 overwrites `app/app.py`, and what it writes is broken.**

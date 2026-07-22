@@ -174,7 +174,7 @@ Trained for 8 epochs with Adam (lr=1e-3) and a learning-rate scheduler that halv
 
 **Real result (fresh run, 2026-07-16):** Test accuracy **81.55%**, Macro F1 **0.8099**.
 
-**Per-class detail:** it does best on sport and business, worst on entertainment and tech — plausibly because entertainment/tech articles share more general vocabulary with other categories than sport's very distinctive lexicon.
+**Per-class detail (fresh run):** best on sport (F1 0.89), then business (0.81); weakest on entertainment (0.76), with politics and tech both at 0.79. The revealing pattern is in precision vs recall: business has high recall (0.93) but low precision (0.72), while politics has high precision (0.89) but low recall (0.71) — i.e. the model is over-predicting "business" and swallowing politics articles into it. Entertainment recall is equally weak (0.72), so it isn't purely a business/politics problem.
 
 **Also worth knowing:** the training curves show loss still falling and validation accuracy still rising at epoch 8 — the model is under-trained, not converged. More epochs would gain a few points but wouldn't close a 15-point gap. If an examiner asks "did you train it long enough?", that's the honest answer: no, but it isn't the reason it loses.
 

@@ -1,9 +1,9 @@
 # ITC6110 — Natural Language Processing  
 ## Group Project Report  
 **Module:** ITC 6110 — Natural Language Processing  
-**Term:** Spring Semester 2025  
-**Team Members:** George Antonakis · Samuel Cook · Orestis Pappas  
-**Submission Date:** [DATE]  
+**Term:** Spring Semester 2026  
+**Team Members:** George Antonakis · Orestis Pappas · Samuel Cook  
+**Submission Date:** 22 July 2026  
 
 ---
 
@@ -382,7 +382,7 @@ Informal use surfaced three limitations, discussed with proposed improvements in
 
 **Chunk documents for retrieval.** We embed whole articles, averaging a 400-word document into one 384-dimensional vector — which is why query-document similarities sit near 0.3. Paragraph-level chunks would produce sharper matches and let the prompt carry the relevant passage, likely improving answers more cheaply than a larger generator.
 
-**Compare against BERTopic.** BERTopic clusters contextual sentence embeddings rather than bag-of-words topics, testing whether the same ten themes emerge from a fundamentally different method — on a corpus where we now know roughly what the answer looks like.
+**Compare against BERTopic.** BERTopic (Grootendorst, 2022) clusters contextual sentence embeddings rather than bag-of-words topics, testing whether the same ten themes emerge from a fundamentally different method — on a corpus where we now know roughly what the answer looks like.
 
 **Test the ceiling hypothesis on a harder corpus.** Our central claim is that classical ML matches transformers *because BBC categories are lexically distinct*. That predicts the gap should widen on tasks requiring contextual disambiguation — fine-grained sentiment, sarcasm detection, multi-label tagging. Running the same pipeline there would confirm or falsify the explanation.
 
@@ -402,6 +402,7 @@ Informal use surfaced three limitations, discussed with proposed improvements in
 10. Johnson, J., Douze, M., & Jégou, H. (2019). *Billion-Scale Similarity Search with GPUs*. IEEE Transactions on Big Data.
 11. Reimers, N. & Gurevych, I. (2019). *Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks*. EMNLP.
 12. Lin, C.-Y. (2004). *ROUGE: A Package for Automatic Evaluation of Summaries*. Text Summarization Branches Out, ACL Workshop.
+13. Grootendorst, M. (2022). *BERTopic: Neural topic modeling with a class-based TF-IDF procedure*. arXiv:2203.05794.
 
 ---
 
