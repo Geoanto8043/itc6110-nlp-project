@@ -48,7 +48,7 @@ The raw data has **zero missing values** but **99 duplicate/near-duplicate rows*
 | Tech | 196 | 151 | 347 |
 | **Total** | **1,194** | **932** | **2,126** |
 
-⚠️ **Watch out:** the current report draft still says the TF-IDF matrix and dataset are "2,225 × 10,000" / "2,225 articles" in a few places. The real, final number after dedup is **2,126**. Use the table above when filling in the report, not the raw 2,225 figures (except in Section 1, which correctly describes the raw download).
+**Know the difference between 2,225 and 2,126** — this is the single easiest thing to get caught on. **2,225** is the raw download and is correct only in Section 1, where the report describes what was collected. **2,126** is what every model actually used, and it is the right answer to "how big is your dataset?" The 99 removed rows break down as **57 exact duplicates + 42 articles present in both the train and test split** — that second group is a genuine train/test leak, and saying so is a strong answer if asked why you deduplicated on text rather than on whole rows. Both the report and the docx now state this correctly.
 
 ### 3. Text normalisation pipeline (Step 2)
 
@@ -258,3 +258,24 @@ Deployed live on HuggingFace Spaces: **https://huggingface.co/spaces/Geoanto/bbc
 | Which model does the deployed app use, and why? | Linear SVM — a few MB and millisecond CPU inference vs. DistilBERT's ~250MB, for a 0.21-point difference that isn't real. The best model on a leaderboard isn't always the right model to ship |
 | Local vs global XAI? | LIME (local, per-article) explains one prediction at a time; the LR-coefficient plot (global) shows the top words driving each class overall |
 | RAG retrieval scores look low (~0.3) — is that a bug? | No — short questions vs. long documents naturally get modest cosine similarity; it's still correctly retrieving topically relevant articles |
+
+---
+
+## Danger zone — questions that could expose you
+
+These are the places where the honest answer differs from what a slide or an earlier draft implies. Learn these five; they are the realistic ways this goes wrong.
+
+**"How did you tune your hyperparameters?"**
+The honest answer is: **we didn't.** There is no cross-validation anywhere in the code — no `GridSearchCV`, no `cross_val_score`. The classifiers use defaults (`C=1.0`, `alpha=0.1`) and the deep models use standard published recipes. Say that plainly, then give the justification: all four non-LSTM models sit within 0.75 points of each other near the dataset's ceiling, so tuning would be optimising noise. **Do not say "five-fold cross-validation"** — an earlier draft of the docx claimed it and it is being removed. Claiming it and being asked to point at the code is the single worst outcome available to you.
+
+**"Your ROUGE-L is 0.155 — what were the two zeros?"**
+One is the metric failing, one is the system failing, and that distinction is the whole point. "What sport does Tiger Woods play?" → **"golf"**, correct, scored 0.0000 because it shares no subsequence with "Tiger Woods is a professional golfer". "Who won the Formula One championship?" → **"ivanovic"**, which is just wrong. Four of ten answers are factually wrong overall. **Do not claim both zeros are terse-but-correct** — an old version of the slides says this and it's false.
+
+**"Is 97.21% vs 97.00% a real difference?"**
+No, and say so first. Two articles out of 932, and the ordering flipped between two runs of the same seeded notebook. Volunteering this is much stronger than being caught defending it.
+
+**"How many articles are in your dataset?"**
+**2,126.** 2,225 is the raw download before deduplication. If you say 2,225 and they check the TF-IDF matrix shape, it's 2,126 × 10,000.
+
+**"Topic modelling is unsupervised — why does your slide say 'Topic Modelling (Supervised)'?"**
+It's a mislabel on slide 6; that slide is text classification. Fix the title before presenting. If it comes up anyway, just say so — LDA on slide 5 is the topic modelling, slide 6 is supervised classification into the five categories.

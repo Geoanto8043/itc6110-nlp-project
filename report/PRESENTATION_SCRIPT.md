@@ -111,7 +111,11 @@ Where a screenshot/figure/live-demo is expected, it's marked **[SHOW: ...]**.
 
 **[SHOW: ROUGE-L per-question chart, `18_rag_rouge_scores.png`]**
 
-> "That number looks bad, so let me explain why we think the metric is measuring the wrong thing. ROUGE-L scores the longest common subsequence against a reference answer — it rewards *wording overlap*, not correctness. Our reference for 'What sport does Tiger Woods play?' was the full sentence 'Tiger Woods is a professional golfer.' But an instruction-tuned model asked a direct question answers tersely — it says 'golf'. That answer is completely correct, and it scores **exactly zero**, because 'golf' and 'golfer' are different tokens with no common subsequence. Both of our zero-scoring questions are short-factoid questions of exactly that shape."
+> "That number looks bad, so let me explain what it does and doesn't tell you. ROUGE-L scores the longest common subsequence against a reference answer — it rewards *wording overlap*, not correctness. Our reference for 'What sport does Tiger Woods play?' was the full sentence 'Tiger Woods is a professional golfer.' The model answered **'golf'** — completely correct — and scored **exactly zero**, because the two share no common subsequence. Six of our ten answers are substantively correct, yet the highest score any of them earned was 0.31."
+
+> "But I want to be straight about the other zero, because it's a different story. Asked who won the Formula One championship, the system answered **'ivanovic'** — that's simply wrong. Four of our ten answers are factually wrong: it called Michael Phelps a sprinter rather than a swimmer, and the Six Nations a rugby world cup. Those are real failures of a small generator, and we're not hiding behind the metric for them."
+
+> "So the sharpest way to put it is this: one of our zeros is the metric failing, and the other is the system failing — and **ROUGE-L gives them the identical score**. That's our actual objection. It isn't that the number is unfairly harsh; it's that it can't distinguish a right answer from a wrong one, which is exactly what you need an evaluation metric to do."
 
 > "We can check retrieval separately, and retrieval is sound. When we query 'Who won the football championship?', it returns two relevant football articles — and a review of the video game *Championship Manager*, tagged tech. That third hit isn't a bug; it's evidence the retriever is matching on **meaning rather than keywords**, because it understood 'championship' in a sense our query never disambiguated."
 

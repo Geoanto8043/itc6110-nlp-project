@@ -98,7 +98,7 @@ A TF-IDF matrix was built over the deduplicated corpus with `max_features=10_000
 
 ### 3.2 Word2Vec Embeddings
 
-A **Skip-gram Word2Vec** model was trained from scratch using Gensim (`vector_size=100`, `window=5`, `min_count=2`, `sg=1`, `epochs=10`), yielding a **15,986-word** vocabulary. Skip-gram was chosen over CBOW as it performs better on smaller corpora and infrequent words — both relevant given ~2,100 documents and a long tail of athlete and company names. Document vectors were obtained by mean-pooling each article's word vectors, producing a **2,126 × 100** matrix.
+A **Skip-gram Word2Vec** model (Mikolov et al., 2013) was trained from scratch using Gensim (`vector_size=100`, `window=5`, `min_count=2`, `sg=1`, `epochs=10`), yielding a **15,986-word** vocabulary. Skip-gram was chosen over CBOW as it performs better on smaller corpora and infrequent words — both relevant given ~2,100 documents and a long tail of athlete and company names. Document vectors were obtained by mean-pooling each article's word vectors, producing a **2,126 × 100** matrix.
 
 **Nearest neighbour queries.** Step 3 requires a solution returning the N most similar words to a query; we implemented `get_similar_words()` over Gensim's cosine similarity index. Results for five queries are tabulated in full in **Appendix A.2**. They are strong evidence the model learned genuine semantics without supervision: the `injury` neighbourhood consists *entirely* of body parts and medical terms (knee 0.784, hamstring 0.779, ligament 0.717) despite the model never being told what an injury is, and `olympic` recovers real Olympic entities — Kelly Holmes, Paula Radcliffe, Haile Gebrselassie, Athens — alongside event vocabulary.
 
@@ -188,6 +188,8 @@ The practical conclusion: **the BBC's five-way editorial taxonomy is coarser tha
 
 All models train on the dataset's **original train/test split** (1,194 / 932 after deduplication) rather than a fresh random split, keeping results comparable with published benchmarks, and every model is evaluated on the same 932 held-out articles. We report accuracy and **macro** F1 — the latter averaging across classes without weighting by size, so the smallest category (tech, n=151) counts equally with the largest (sport, n=230).
 
+**On hyperparameters.** We did not perform a hyperparameter search. Each classifier uses library defaults or standard settings (`LinearSVC(C=1.0)`, `MultinomialNB(alpha=0.1)`, `LogisticRegression(C=1.0)`), and the deep models use the conventional fine-tuning recipes cited below. This is a deliberate limitation rather than an oversight: with all models clustered within 0.75 points of each other and near the dataset's apparent ceiling, tuning would optimise differences we argue in Section 4.2.1 are not meaningful. It does mean the reported figures are untuned baselines, and a search over `C`, the TF-IDF vocabulary size, or the n-gram range could shift the classical models by a few tenths of a point.
+
 ##### Traditional ML Models
 
 | Model | Accuracy | Macro F1 |
@@ -227,7 +229,7 @@ The curves show loss still falling and validation accuracy still climbing at epo
 
 ##### Deep Learning — DistilBERT (Fine-tuned)
 
-DistilBERT (`distilbert-base-uncased`, 66.9M parameters) was fine-tuned via the HuggingFace `Trainer`: 4 epochs, batch size 16, learning rate 2e-5 with warmup, weight decay 0.01, inputs truncated to 256 subword tokens. DistilBERT is a distilled BERT variant — ~40% smaller and 60% faster, retaining ~97% of BERT's performance (Sanh et al., 2019) — chosen to keep fine-tuning feasible on consumer hardware. It trains on the **original, unprocessed text**, for the reasons in Section 2.4.
+DistilBERT (`distilbert-base-uncased`, 66.9M parameters) was fine-tuned via the HuggingFace `Trainer`: 4 epochs, batch size 16, learning rate 2e-5 with warmup, weight decay 0.01, inputs truncated to 256 subword tokens. DistilBERT is a distilled variant of BERT (Devlin et al., 2019) — ~40% smaller and 60% faster, retaining ~97% of BERT's performance (Sanh et al., 2019) — chosen to keep fine-tuning feasible on consumer hardware. It trains on the **original, unprocessed text**, for the reasons in Section 2.4.
 
 | Metric | Value |
 |--------|-------|
@@ -289,7 +291,7 @@ The brief requires explanation "on either a local or global basis"; we provide b
 
 RAG (Lewis et al., 2020) addresses a specific weakness of generative models: asked a factual question, they produce fluent text from parametric memory with no guarantee of accuracy and no citable source. RAG retrieves relevant documents first and instructs the model to answer only from them, grounding output in a verifiable corpus.
 
-**Retriever.** All 2,126 articles were encoded with `sentence-transformers/all-MiniLM-L6-v2` (Reimers & Gurevych, 2019) into 384-dimensional vectors, stored in a FAISS `IndexFlatIP` index. We index the **original text** — the encoder is a pre-trained transformer and, as with DistilBERT, performs best on natural language. Because vectors are L2-normalised before indexing, **inner product is mathematically equivalent to cosine similarity**, so `IndexFlatIP` performs exact, exhaustive cosine search. Approximate indexes (IVF, HNSW) exist to make billion-scale search tractable; at 2,126 vectors exhaustive search takes milliseconds, so accepting approximation error would buy nothing.
+**Retriever.** All 2,126 articles were encoded with `sentence-transformers/all-MiniLM-L6-v2` (Reimers & Gurevych, 2019) into 384-dimensional vectors, stored in a FAISS `IndexFlatIP` index (Johnson et al., 2019). We index the **original text** — the encoder is a pre-trained transformer and, as with DistilBERT, performs best on natural language. Because vectors are L2-normalised before indexing, **inner product is mathematically equivalent to cosine similarity**, so `IndexFlatIP` performs exact, exhaustive cosine search. Approximate indexes (IVF, HNSW) exist to make billion-scale search tractable; at 2,126 vectors exhaustive search takes milliseconds, so accepting approximation error would buy nothing.
 
 **Generator.** `google/flan-t5-base` (Chung et al., 2022) generates answers via `AutoModelForSeq2SeqLM`. Flan-T5 is instruction-tuned, so it follows a directive such as "answer using only the articles provided" without task-specific training — essential, as we have no supervised QA data.
 

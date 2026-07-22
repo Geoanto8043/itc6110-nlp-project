@@ -1,6 +1,63 @@
 # ITC6110 Project — Remaining Tasks
 
-## 🚨 DOCX vs notebooks — consistency audit (2026-07-22)
+## 🚨 FULL-PROJECT CONSISTENCY AUDIT (2026-07-22)
+
+Scope: report ↔ code, report internal (citations/figures/cross-refs), report ↔ deck, and a sweep
+for claims that could be exposed under questioning.
+
+### Must fix before submitting / presenting
+
+- [ ] **Deck slide 12 states a falsehood.** *"Both of our zero-scoring questions are short-factoid
+      questions of exactly that shape."* Only ONE zero is a metric artefact ("golf", correct). The
+      other — Formula One → **"ivanovic"** — is simply a wrong answer. If an examiner asks "what was
+      the other zero?", the current slide leads you into a trap. `PRESENTATION_SCRIPT.md` Part C has
+      been rewritten with the correct, stronger framing; update the slide to match.
+- [ ] **`.docx` claims five-fold cross-validation that the code never performs** (see next section).
+- [ ] **`.docx` RAG section repeats the same "both zeros" overclaim** plus *"retrieval succeeds on
+      every question"*. Port the corrected §4.2.2 / §5.1 from the `.md`.
+- [ ] **Deck slide 6 is titled "Topic Modelling (Supervised)"** — supervised classification is not
+      topic modelling; the two are different tasks and the deck already covers real topic modelling
+      on slide 5. Retitle to "Text Classification (Supervised)". This is the kind of terminology slip
+      an examiner picks up on immediately.
+- [ ] **Deck slide 12 contains leftover placeholder text** — "Instance 1" / "Instance 2".
+- [ ] **Deck slide 11 is empty** (between RAG and RAG Continued — probably wants `18_rag_rouge_scores.png`).
+- [ ] **Deck has no results table.** Slides 6/8/9 quote individual figures but the five-model
+      comparison never appears. `17_model_comparison.png` on slide 9 would fix it.
+
+### Verified clean — no action
+
+- **All 30 hyperparameter claims in the report match the notebook code exactly** (TF-IDF
+  max_features/ngram/min_df; Word2Vec size/window/min_count/sg/epochs; t-SNE perplexity/max_iter;
+  LDA filter_extremes; LSTM vocab/len/dims/dropout/lr/epochs/clipping/scheduler; DistilBERT
+  epochs/batch/lr/decay/max_len; MiniLM; IndexFlatIP; Flan-T5; 400-char snippets). Zero contradictions.
+- **All 24 headline metrics match** across notebooks, `.md`, `.docx` and deck. No stale numbers
+  anywhere in the deck; slide roundings (97.2, 81.6, 96.5, 0.969, 0.971, 0.155, 0.31) are all correct.
+- **Figures:** 18 declared, sequential, no duplicates, every referenced file exists, none unused.
+- **Cross-references:** all 17 "Section N"/"Appendix X.Y" pointers resolve.
+- **Citations:** all 13 references now cited in text and all in-text citations appear in the list.
+
+### Fixed in this pass
+
+- [x] Three references were listed but never cited — **Devlin (2019)**, **Mikolov (2013)**,
+      **Johnson (2019)**. Now cited at DistilBERT, Word2Vec and FAISS respectively. (The `.docx`
+      already cited all three; the `.md` was the weaker document here.)
+- [x] Added an explicit **"On hyperparameters"** note to §4.2.1 stating that no search was performed
+      and models use defaults (`C=1.0`, `alpha=0.1`). This is the honest counterpart to deleting the
+      false CV claim, and it pre-empts "how did you choose C?" in Q&A.
+- [x] `PRESENTATION_SCRIPT.md` Part C rewritten around the verified answers.
+- [x] Walkthrough: replaced stale advice telling you the report still says 2,225 (it doesn't any more).
+
+### Known asymmetry (decide, not a bug)
+
+- The `.md` has **18 figures and Appendices A–D**; the `.docx` has **12 figures and no appendices**,
+  so figure numbers differ between the two documents. Only one will be submitted — just don't cite
+  `.md` figure numbers aloud while the `.docx` is on screen.
+- The `.docx` integrates figures into the prose ("The confusion matrix (Figure 7) shows…"); the `.md`
+  captions them but the body text refers to only one. If the `.md` is ever submitted, add those.
+
+---
+
+## DOCX vs notebooks — metric audit detail (2026-07-22)
 
 Full audit of `report/ITC6110_report.docx` against the notebooks' saved outputs.
 **All 24 headline metrics match the notebooks exactly.** Issues found, worst first:
